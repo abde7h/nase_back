@@ -116,6 +116,44 @@ json
 "presenteEvento": true
 }
 
+## Nokia API Verification Examples
+
+### Example 1: Verify a user's current phone matches their registered phone
+
+POST http://localhost:8081/api/nokia/verificacion/persona/1
+Content-Type: application/json
+{
+"numeroTelefono": "+34612345678"
+}
+
+Response:
+
+json
+{
+"numeroActual": "+34612345678",
+"personaId": 1,
+"numeroRegistrado": "612345678",
+"coincide": true,
+"mensaje": "El número actual coincide con el número registrado"
+}
+
+### Example 2: Direct verification with a hash
+
+POST http://localhost:8081/api/nokia/verificacion/directo
+Content-Type: application/json
+{
+"numeroTelefono": "+34612345678",
+"hashNumero": "32f67ab4e4312618b09cd23ed8ce41b13e095fe52b73b2e8da8ef49830e50dba"
+}
+
+Response:
+
+json
+{
+"numero": "+34612345678",
+"verificado": true,
+"mensaje": "Verificación exitosa"
+}
 
 ## Error Responses
 

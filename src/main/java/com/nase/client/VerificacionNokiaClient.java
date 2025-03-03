@@ -1,117 +1,110 @@
 package com.nase.client;
 
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.Response;
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class VerificacionNokiaClient {
-
-    private static final Logger logger = LoggerFactory.getLogger(VerificacionNokiaClient.class);
     
-    // Actualiza estos valores según la documentación actual de RapidAPI
-    private final String apiKey = "fb420e5939mshd6b7c625a08cefdp12bf01jsn8726c4128732";
-    private final String apiHost = "nac-authorization-server.nokia.rapidapi.com";
-    private final String baseUrl = "https://nac-authorization-server.p-eu.rapidapi.com";
-
-    /**
-     * Obtiene las credenciales de cliente para autenticación con la API de Nokia
-     * @return Respuesta con las credenciales en formato JSON
-     */
-    public String obtenerCredencialesCliente() {
-        try (AsyncHttpClient client = new DefaultAsyncHttpClient()) {
-            logger.debug("Iniciando petición a: {}/auth/clientcredentials", baseUrl);
-            logger.debug("Headers - Host: {}, Key: {}", apiHost, apiKey);
-            
-            CompletableFuture<Response> future = client.prepare("GET", "https://nac-authorization-server.p-eu.rapidapi.com/auth/clientcredentials")
-                    .setHeader("x-rapidapi-key", apiKey)
-                    .setHeader("x-rapidapi-host", "nac-authorization-server.nokia.rapidapi.com")
-                    .execute()
-                    .toCompletableFuture();
-
-            Response response = future.get();
-            logger.debug("Respuesta recibida. Código: {}", response.getStatusCode());
-            return response.getResponseBody();
-        } catch (InterruptedException | ExecutionException | java.io.IOException e) {
-            logger.error("Error al obtener credenciales: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al obtener credenciales de cliente de Nokia: " + e.getMessage(), e);
-        }
+    private static final Logger logger = LoggerFactory.getLogger(VerificacionNokiaClient.class);
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+    
+    @Value("${rapidapi.key:fb420e5939mshd6b7c625a08cefdp12bf01jsn8726c4128732}")
+    private String rapidApiKey;
+    
+    @Value("${rapidapi.host:number-verification.nokia.rapidapi.com}")
+    private String rapidApiHost;
+    
+    @Value("${rapidapi.url:https://number-verification.p-eu.rapidapi.com/verify}")
+    private String rapidApiUrl;
+    
+    public VerificacionNokiaClient(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
-
+    
     /**
-     * Verifica si un número de teléfono está registrado
-     * @param numeroTelefono El número de teléfono a verificar
-     * @return true si el usuario existe, false en caso contrario
+     * Genera un hash SHA-256 del número de teléfono para la verificación
      */
-    public boolean verificarNumeroTelefono(String numeroTelefono) {
-        logger.debug("Verificando número: {}", numeroTelefono);
-        
-        // Simulación simple: si el número termina en número par, el usuario existe
-        return numeroTelefono != null && !numeroTelefono.isEmpty() &&
-                Character.getNumericValue(numeroTelefono.charAt(numeroTelefono.length() - 1)) % 2 == 0;
-    }
-
-    /**
-     * Consulta información detallada de un usuario por su número de teléfono
-     * @param numeroTelefono El número de teléfono del usuario
-     * @return Información del usuario en formato JSON
-     */
-    public String consultarInformacionUsuario(String numeroTelefono) {
-        try (AsyncHttpClient client = new DefaultAsyncHttpClient()) {
-            CompletableFuture<Response> future = client.prepare("GET", baseUrl + "/users/" + numeroTelefono)
-                    .setHeader("x-rapidapi-key", apiKey)
-                    .setHeader("x-rapidapi-host", apiHost)
-                    .execute()
-                    .toCompletableFuture();
-
-            Response response = future.get();
-            return response.getResponseBody();
-        } catch (InterruptedException | ExecutionException | java.io.IOException e) {
-            throw new RuntimeException("Error al consultar información de usuario en Nokia: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Verifica el estado de activación de un número de teléfono
-     * @param numeroTelefono El número de teléfono a verificar
-     * @return true si el número está activo, false en caso contrario
-     */
-    public boolean verificarEstadoActivacion(String numeroTelefono) {
+    public String generarHashNumero(String numeroTelefono) {
         try {
-            // Comentamos o eliminamos esta línea:
-            // String informacionUsuario = consultarInformacionUsuario(numeroTelefono);
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(numeroTelefono.getBytes());
             
-            // Simulamos una verificación simple
-            return numeroTelefono != null &&
-                    !numeroTelefono.isEmpty() &&
-                    numeroTelefono.length() > 5;
-        } catch (Exception e) {
+            // Convertir bytes a string hexadecimal
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Error al generar hash para el número: {}", e.getMessage());
+            throw new RuntimeException("Error al generar hash para verificación", e);
+        }
+    }
+    
+    /**
+     * Verifica si el número de teléfono coincide con el hash almacenado
+     */
+    public boolean verificarNumero(String numeroTelefono, String hashAlmacenado) {
+        try {
+            // Asegurarse de que el número tenga formato internacional (con +)
+            if (!numeroTelefono.startsWith("+")) {
+                numeroTelefono = "+34" + numeroTelefono; // Prefijo de España como ejemplo
+            }
+            
+            // Preparar headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("x-rapidapi-key", rapidApiKey);
+            headers.set("x-rapidapi-host", rapidApiHost);
+            
+            // Preparar el cuerpo de la solicitud
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("phoneNumber", numeroTelefono);
+            requestBody.put("hashedPhoneNumber", hashAlmacenado);
+            
+            // Crear la entidad HTTP con headers y cuerpo
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
+            
+            // Ejecutar la solicitud
+            ResponseEntity<String> response = restTemplate.exchange(
+                    rapidApiUrl,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+            
+            // Procesar la respuesta
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode jsonResponse = objectMapper.readTree(response.getBody());
+                logger.info("Respuesta de verificación: {}", jsonResponse);
+                
+                // La API retorna un campo 'match' con true/false
+                if (jsonResponse.has("match")) {
+                    return jsonResponse.get("match").asBoolean();
+                }
+            }
+            
+            logger.warn("Verificación fallida. Código: {}", response.getStatusCodeValue());
             return false;
-        }
-    }
-
-    /**
-     * Verifica si un número de teléfono tiene servicios premium activos
-     * @param numeroTelefono El número de teléfono a verificar
-     * @return true si tiene servicios premium, false en caso contrario
-     */
-    public boolean verificarServiciosPremium(String numeroTelefono) {
-        try {
-            // Comentamos o eliminamos esta línea:
-            // String informacionUsuario = consultarInformacionUsuario(numeroTelefono);
             
-            // Simulamos una verificación simple
-            return numeroTelefono != null &&
-                    !numeroTelefono.isEmpty() &&
-                    numeroTelefono.length() >= 9 &&
-                    Character.getNumericValue(numeroTelefono.charAt(0)) > 5;
         } catch (Exception e) {
+            logger.error("Error en verificación de número: {}", e.getMessage());
             return false;
         }
     }
