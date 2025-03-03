@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/nokia/verificacion")
+@RequestMapping("/api/verificacion-nokia")
 public class VerificacionNokiaController {
     
     private static final Logger logger = LoggerFactory.getLogger(VerificacionNokiaController.class);
@@ -44,7 +44,7 @@ public class VerificacionNokiaController {
     /**
      * Verifica un número directamente contra un hash
      */
-    @PostMapping("/directo")
+    @PostMapping("/verificacion/directo")
     public ResponseEntity<?> verificarNumeroDirecto(@RequestBody Map<String, String> request) {
         String numero = request.get("numeroTelefono");
         String hashNumero = request.get("hashNumero");

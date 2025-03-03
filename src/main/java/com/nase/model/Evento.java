@@ -17,10 +17,10 @@ public class Evento {
     @Column(nullable = false)
     private String ubicacion;
 
-    @Column(name = "latitud")
+    @Column
     private Double latitud;
 
-    @Column(name = "longitud")
+    @Column
     private Double longitud;
 
     @Column(name = "radio_metros")

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/verificacion/usuario")
+@RequestMapping("/api/verificacion-usuario")
 public class VerificacionUsuarioController {
     
     private final VerificacionUsuarioService verificacionService;
