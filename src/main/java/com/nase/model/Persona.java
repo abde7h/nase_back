@@ -14,8 +14,14 @@ public class Persona {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(name = "numero_telefono")
+    @Column(name = "apellido")
+    private String apellido;
+
+    @Column(name = "numero_telefono", unique = true)
     private String numeroTelefono;
+
+    @Column(name = "correo_electronico", unique = true)
+    private String correoElectronico;
 
     @Column(name = "ip_publica")
     private String ipPublica;
@@ -39,8 +45,20 @@ public class Persona {
     @Column(name = "presente_evento")
     private Boolean presenteEvento = false;
 
+    @Column(name = "vip")
+    private Boolean vip = false;
+
     // Constructores, getters y setters
     public Persona() {}
+
+    public Persona(String nombre, String apellido, String numeroTelefono, String correoElectronico) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.numeroTelefono = numeroTelefono;
+        this.correoElectronico = correoElectronico;
+        this.ultimoAcceso = LocalDateTime.now();
+        this.vip = false;
+    }
 
     public Long getId() {
         return id;
@@ -58,12 +76,28 @@ public class Persona {
         this.nombre = nombre;
     }
 
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
     public String getNumeroTelefono() {
         return numeroTelefono;
     }
 
     public void setNumeroTelefono(String numeroTelefono) {
         this.numeroTelefono = numeroTelefono;
+    }
+
+    public String getCorreoElectronico() {
+        return correoElectronico;
+    }
+
+    public void setCorreoElectronico(String correoElectronico) {
+        this.correoElectronico = correoElectronico;
     }
 
     public String getIpPublica() {
@@ -120,5 +154,13 @@ public class Persona {
 
     public void setPresenteEvento(Boolean presenteEvento) {
         this.presenteEvento = presenteEvento;
+    }
+
+    public Boolean getVip() {
+        return vip;
+    }
+
+    public void setVip(Boolean vip) {
+        this.vip = vip;
     }
 } 

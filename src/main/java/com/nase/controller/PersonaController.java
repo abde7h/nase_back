@@ -8,9 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/personas")
@@ -74,5 +76,14 @@ public class PersonaController {
         persona = personaRepository.save(persona);
         
         return ResponseEntity.ok(persona);
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<List<Persona>> crearMultiples(@RequestBody List<Persona> personas) {
+        List<Persona> personasCreadas = new ArrayList<>();
+        for (Persona persona : personas) {
+            personasCreadas.add(personaRepository.save(persona));
+        }
+        return new ResponseEntity<>(personasCreadas, HttpStatus.CREATED);
     }
 } 

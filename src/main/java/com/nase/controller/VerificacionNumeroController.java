@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/telefono")
+@RequestMapping("/api/numeros")
 public class VerificacionNumeroController {
 
     private static final Logger logger = LoggerFactory.getLogger(VerificacionNumeroController.class);
@@ -25,19 +26,22 @@ public class VerificacionNumeroController {
      * Verifica si un número de teléfono existe en la base de datos
      */
     @GetMapping("/verificar/{numero}")
-    public ResponseEntity<?> verificarNumero(@PathVariable String numero) {
+    public ResponseEntity<Map<String, Object>> verificar(@PathVariable String numero) {
         logger.info("Verificando número: {}", numero);
         
-        Persona persona = personaRepository.findByNumeroTelefono(numero);
-        boolean existe = persona != null;
+        Optional<Persona> personaOpt = personaRepository.findByNumeroTelefono(numero);
+        boolean existe = personaOpt.isPresent();
         
         Map<String, Object> response = new HashMap<>();
         response.put("numero", numero);
         response.put("existe", existe);
         
         if (existe) {
+            Persona persona = personaOpt.get();
             response.put("id", persona.getId());
             response.put("nombre", persona.getNombre());
+            response.put("apellido", persona.getApellido());
+            response.put("vip", persona.getVip());
         }
         
         return ResponseEntity.ok(response);
@@ -56,11 +60,11 @@ public class VerificacionNumeroController {
             ));
         }
         
-        return verificarNumero(numero);
+        return verificar(numero);
     }
 
     @PostMapping("/verificar/{numero}")
     public ResponseEntity<?> verificarNumeroPostPath(@PathVariable String numero) {
-        return verificarNumero(numero);
+        return verificar(numero);
     }
 } 

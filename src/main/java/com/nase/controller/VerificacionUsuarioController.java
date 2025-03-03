@@ -24,7 +24,7 @@ public class VerificacionUsuarioController {
      */
     @GetMapping("/{numeroTelefono}")
     public ResponseEntity<?> verificarNumero(@PathVariable String numeroTelefono) {
-        Map<String, Object> resultado = verificacionService.verificarNumero(numeroTelefono);
+        Map<String, Object> resultado = verificacionService.verificarUsuario(numeroTelefono);
         return ResponseEntity.ok(resultado);
     }
     
@@ -36,7 +36,7 @@ public class VerificacionUsuarioController {
             @PathVariable String numeroTelefono,
             @PathVariable Long eventoId) {
         
-        Map<String, Object> resultado = verificacionService.verificarPresenciaEvento(numeroTelefono, eventoId);
+        Map<String, Object> resultado = verificacionService.verificarUsuarioEnEvento(numeroTelefono, eventoId);
         return ResponseEntity.ok(resultado);
     }
     
@@ -53,7 +53,7 @@ public class VerificacionUsuarioController {
             ));
         }
         
-        Map<String, Object> resultado = verificacionService.verificarNumero(numeroTelefono);
+        Map<String, Object> resultado = verificacionService.verificarUsuario(numeroTelefono);
         return ResponseEntity.ok(resultado);
     }
 } 

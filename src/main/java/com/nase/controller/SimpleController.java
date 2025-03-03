@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/simple")
 public class SimpleController {
 
     private final PersonaRepository personaRepository;
@@ -18,10 +20,10 @@ public class SimpleController {
 
     @GetMapping("/check/{numero}")
     public ResponseEntity<?> verificar(@PathVariable String numero) {
-        Persona persona = personaRepository.findByNumeroTelefono(numero);
+        Optional<Persona> personaOpt = personaRepository.findByNumeroTelefono(numero);
         return ResponseEntity.ok(Map.of(
             "numero", numero,
-            "existe", persona != null
+            "existe", personaOpt.isPresent()
         ));
     }
 } 
