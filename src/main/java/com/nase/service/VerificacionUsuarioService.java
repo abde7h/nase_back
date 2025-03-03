@@ -1,8 +1,6 @@
 package com.nase.service;
 
-import com.nase.model.Evento;
 import com.nase.model.Persona;
-import com.nase.repository.EventoRepository;
 import com.nase.repository.PersonaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +16,9 @@ public class VerificacionUsuarioService {
     private static final Logger logger = LoggerFactory.getLogger(VerificacionUsuarioService.class);
     
     private final PersonaRepository personaRepository;
-    private final EventoRepository eventoRepository;
     
-    public VerificacionUsuarioService(PersonaRepository personaRepository, EventoRepository eventoRepository) {
+    public VerificacionUsuarioService(PersonaRepository personaRepository) {
         this.personaRepository = personaRepository;
-        this.eventoRepository = eventoRepository;
     }
     
     /**

@@ -6,8 +6,6 @@ import com.nase.repository.EventoRepository;
 import com.nase.repository.PersonaRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +16,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    private static final Logger logger = LoggerFactory.getLogger(DashboardController.class);
     private final EventoRepository eventoRepository;
     private final PersonaRepository personaRepository;
 

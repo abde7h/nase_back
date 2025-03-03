@@ -7,7 +7,6 @@ import com.nase.model.Persona;
 import com.nase.repository.PersonaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,7 +19,6 @@ public class AsistenciaEventoService {
     private final PersonaRepository personaRepository;
     private final GeolocalizacionNokiaClient geoClient;
     
-    @Autowired
     public AsistenciaEventoService(PersonaRepository personaRepository, GeolocalizacionNokiaClient geoClient) {
         this.personaRepository = personaRepository;
         this.geoClient = geoClient;

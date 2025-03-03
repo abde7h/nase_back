@@ -1,8 +1,6 @@
 package com.nase.controller;
 
 import com.nase.service.VerificacionUsuarioService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +10,6 @@ import java.util.Map;
 @RequestMapping("/api/verificacion/usuario")
 public class VerificacionUsuarioController {
     
-    private static final Logger logger = LoggerFactory.getLogger(VerificacionUsuarioController.class);
     private final VerificacionUsuarioService verificacionService;
     
     public VerificacionUsuarioController(VerificacionUsuarioService verificacionService) {
